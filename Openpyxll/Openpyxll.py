@@ -8,32 +8,15 @@ from openpyxl import Workbook
 from openpyxl.descriptors.base import DateTime
 import os
 
-class Group:
-    group = None
-    specialty = None
-    profile = None
-    ochn = None
-    year = None
-    thread = None
-    amount = None
-    def __init__(self,gr, Specialty, Profile, Ochn, Year, Thread, Amount):
-        self.group = gr
-        self.specialty = Specialty
-        self.profile = Profile
-        self.ochn = Ochn
-        self.year = Year
-        self.thread = Thread
-        self.amount = Amount
-
 def contains (a, b):
     for i in a:
-        if b.group==i.group:
+        if b[1]==i[1]:
             return True
     return False
 
 def at(a,b):
     for i in range(0,len(a)):
-        if a[i].group==b.group:
+        if a[i][1]==b[1]:
             return i
 
 groups = []
@@ -42,23 +25,27 @@ wb = load_workbook("../Исходные_данные/Список-студент
 ws = wb['Лист1']
 for row in ws.rows:
     if row[30].value and row[30].value!="Группа":
-        amount = 1
+        group = [1]
         groupn = row[30].value
         specialty = row[32].value.split(" ")[0]
         profile = row[31].value.split(" ")[0]
         ochn = row[36].value
         year = int(datetime.today().year - int(row[29].value))
         thread = specialty + " " + profile + " " + str(year)
+        group.append(groupn)
+        group.append(thread)
+        group.append(specialty)
+        group.append(profile)
         if(ochn=="очное"):
-            ochn = "очн"
+            group.append("очн")
         else:
-            ochn = "заочн"
-        group = Group(groupn,specialty,profile,ochn,year,thread,amount)
+            group.append("заочн")
+        group.append(year)
         if not contains(groups, group):
             groups.append(group)
         else:
-            groups[at(groups,group)].amount+=1
-        print(groups[-1].group)
+            groups[at(groups,group)][0]+=1
+        print(groups[-1])
 
 workbook = Workbook()
 sheet = workbook.active
@@ -72,13 +59,13 @@ sheet["G1"] = "Кол-во\nстудентов"
 
 nrow = 2
 for group in groups:
-    sheet.cell(row = nrow, column = 1).value = group.group
-    sheet.cell(row = nrow, column = 2).value = group.thread
-    sheet.cell(row = nrow, column = 3).value = group.specialty
-    sheet.cell(row = nrow, column = 4).value = group.profile
-    sheet.cell(row = nrow, column = 5).value = group.ochn
-    sheet.cell(row = nrow, column = 6).value = group.year
-    sheet.cell(row = nrow, column = 7).value = group.amount
+    sheet.cell(row = nrow, column = 1).value = group[1]
+    sheet.cell(row = nrow, column = 2).value = group[2]
+    sheet.cell(row = nrow, column = 3).value = group[3]
+    sheet.cell(row = nrow, column = 4).value = group[4]
+    sheet.cell(row = nrow, column = 5).value = group[5]
+    sheet.cell(row = nrow, column = 6).value = group[6]
+    sheet.cell(row = nrow, column = 7).value = group[0]
     nrow+=1
 workbook.save(filename = "../Результаты/work_openpyxl.xlsx")
 wb.close()
