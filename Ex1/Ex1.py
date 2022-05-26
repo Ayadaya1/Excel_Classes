@@ -8,15 +8,32 @@ import xlwt
 from collections import defaultdict
 from datetime import datetime
 
+class Group:
+    group = None
+    specialty = None
+    profile = None
+    ochn = None
+    year = None
+    thread = None
+    amount = None
+    def __init__(self,gr, Specialty, Profile, Ochn, Year, Thread, Amount):
+        self.group = gr
+        self.specialty = Specialty
+        self.profile = Profile
+        self.ochn = Ochn
+        self.year = Year
+        self.thread = Thread
+        self.amount = Amount
+
 def contains (a, b):
     for i in a:
-        if b[1]==i[1]:
+        if b.group==i.group:
             return True
     return False
 
 def at(a,b):
     for i in range(0,len(a)):
-        if a[i][1]==b[1]:
+        if a[i].group==b.group:
             return i
 
 rb = xlrd.open_workbook("../Исходные_данные/Список-студентов_(фрагмент).xlsx", formatting_info =False);
@@ -26,27 +43,23 @@ groups = []
 
 for i in range (6,sheet.nrows):
     if(sheet.cell(i,30).ctype!=XL_CELL_EMPTY):
-        group = [1]
+        amount = 1
         groupn = sheet.cell(i,30).value
         specialty = sheet.cell(i,32).value.split(" ")[0]
         profile = sheet.cell(i,31).value.split(" ")[0]
         ochn = sheet.cell(i,36).value
         year = int(datetime.today().year - sheet.cell(i,29).value)
         thread = specialty + " " + profile + " " + str(year)
-        group.append(groupn)
-        group.append(thread)
-        group.append(specialty)
-        group.append(profile)
+        
         if(ochn=="очное"):
-            group.append("очн")
+            ochn = "очн"
         else:
-            group.append("заочн")
-        group.append(year)
+            ochn = "заочн"
+        group = Group(groupn, specialty,profile,ochn,year,thread,amount)
         if not contains(groups, group):
             groups.append(group)
         else:
-            groups[at(groups,group)][0]+=1
-
+            groups[at(groups,group)].amount+=1
 
 wb = xlwt.Workbook()
 ws = wb.add_sheet("Группы")
@@ -62,13 +75,13 @@ ws.write(0,6, "Кол-во\nстудентов",style0)
 row = 1
 
 for i in groups:
-    ws.write(row,0,i[1])
-    ws.write(row,1,i[2])
-    ws.write(row,2,i[3])
-    ws.write(row,3,i[4])
-    ws.write(row,4,i[5])
-    ws.write(row,5,i[6])
-    ws.write(row,6,i[0])
+    ws.write(row,0,i.group)
+    ws.write(row,1,i.thread)
+    ws.write(row,2,i.specialty)
+    ws.write(row,3,i.profile)
+    ws.write(row,4,i.ochn)
+    ws.write(row,5,i.year)
+    ws.write(row,6,i.amount)
     row+=1
 
 wb.save("../Результаты/Work.xlsx")
